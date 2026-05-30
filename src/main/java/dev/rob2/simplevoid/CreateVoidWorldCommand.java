@@ -3,7 +3,7 @@ package dev.rob2.simplevoid;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.bukkit.generator.WorldCreator;
+
 
 public class CreateVoidWorldCommand implements CommandExecutor {
 
