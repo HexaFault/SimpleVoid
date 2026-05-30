@@ -36,7 +36,11 @@ public class CreateVoidWorldCommand implements CommandExecutor {
         player.sendMessage(ChatColor.YELLOW + "Creating void world '" + worldName + "'...");
 
         WorldCreator wc = new WorldCreator(worldName);
-        wc.generator(new VoidChunkGenerator());
+        wc.environment(World.Environment.NORMAL);     // REQUIRED
+        wc.type(WorldType.NORMAL);                    // REQUIRED
+        wc.generateStructures(false);                 // RECOMMENDED
+        wc.generator(new VoidChunkGenerator());       // your void generator
+
         World world = wc.createWorld();
 
         if (world == null) {
