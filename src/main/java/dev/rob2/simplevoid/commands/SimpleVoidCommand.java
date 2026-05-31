@@ -1,7 +1,6 @@
 package dev.rob2.simplevoid.commands;
 
 import dev.rob2.simplevoid.SimpleVoid;
-import dev.rob2.simplevoid.world.VoidChunkGenerator;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -41,7 +40,7 @@ public class SimpleVoidCommand implements CommandExecutor {
     }
 
     // ============================================================
-    // CREATE WORLD (FIXED FOR PAPER 1.20+)
+    // CREATE WORLD (QUEUED FOR STARTUP)
     // ============================================================
     private boolean handleCreateWorld(CommandSender sender, String label, String[] args) {
 
@@ -76,35 +75,13 @@ public class SimpleVoidCommand implements CommandExecutor {
             return true;
         }
 
-        player.sendMessage(ChatColor.YELLOW + "Creating void world '" + worldName + "'...");
+        // Queue world for creation on next startup
+        plugin.getConfig().set("pending-world", worldName);
+        plugin.saveConfig();
 
-        // --- CORRECT WORLD CREATION FOR PAPER 1.20+ ---
-        WorldCreator wc = new WorldCreator(worldName);
-        wc.environment(World.Environment.NORMAL);
-        wc.type(WorldType.NORMAL);
-        wc.generateStructures(false);
-        wc.generator(new VoidChunkGenerator());
+        player.sendMessage(ChatColor.GREEN + "World '" + worldName + "' queued for creation.");
+        player.sendMessage(ChatColor.YELLOW + "Restart the server to generate the void world.");
 
-        World world = Bukkit.createWorld(wc);
-
-        if (world == null) {
-            player.sendMessage(ChatColor.RED + "Failed to create world.");
-            return true;
-        }
-
-        // Spawn platform
-        int y = 64;
-        Location spawn = new Location(world, 0, y, 0);
-        world.setSpawnLocation(spawn);
-
-        for (int x = -1; x <= 1; x++) {
-            for (int z = -1; z <= 1; z++) {
-                world.getBlockAt(x, y, z).setType(Material.BEDROCK);
-            }
-        }
-
-        player.teleport(spawn.add(0.5, 1, 0.5));
-        player.sendMessage(ChatColor.GREEN + "Void world created and loaded.");
         return true;
     }
 
