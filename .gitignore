@@ -1,1 +1,35 @@
 #
+# Maven target directory
+/target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.jar
+*.war
+
+# Minecraft plugin server test folders (optional)
+run/
+server/
+plugins/*
+
+# But keep your plugin source
+!plugins/SimpleVoid.jar
