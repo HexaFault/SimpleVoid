@@ -1,12 +1,14 @@
 name: SimpleVoid
 main: dev.rob2.simplevoid.SimpleVoid
-version: 1.0.0
+version: 1.1.0
 api-version: 1.20
+
 commands:
   simplevoid:
-    description: Create a void world
-    usage: /simplevoid <worldname>
-    permission: simplevoid.create
+    description: SimpleVoid main command
+    usage: /simplevoid <subcommand>
+    permission: simplevoid.use
+
 permissions:
-  simplevoid.create:
+  simplevoid.use:
     default: op

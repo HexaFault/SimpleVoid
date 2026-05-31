@@ -1,0 +1,21 @@
+# World players should spawn in on FIRST JOIN
+hub-world: "hub"
+
+# Respawn behavior:
+#   "same-world" -> vanilla behavior
+#   "hub"        -> always respawn in hub-world
+respawn-mode: "same-world"
+
+# Simple block-based portals
+portals: {}
+# Example:
+# portals:
+#   spawn-to-survival:
+#     world: "hub"
+#     x: 0
+#     y: 64
+#     z: 0
+#     target-world: "survival"
+#     target-x: 0.5
+#     target-y: 80
+#     target-z: 0.5

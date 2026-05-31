@@ -1,4 +1,4 @@
-package dev.rob2.simplevoid;
+package dev.rob2.simplevoid.world;
 
 import org.bukkit.World;
 import org.bukkit.generator.ChunkGenerator;
