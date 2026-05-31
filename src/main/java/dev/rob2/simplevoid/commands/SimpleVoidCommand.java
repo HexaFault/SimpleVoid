@@ -6,6 +6,8 @@ import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 
+import java.io.File;
+
 public class SimpleVoidCommand implements CommandExecutor {
 
     private final SimpleVoid plugin;
@@ -26,16 +28,10 @@ public class SimpleVoidCommand implements CommandExecutor {
             return true;
         }
 
-        // -------------------------
-        // /simplevoid createworld
-        // -------------------------
         if (args[0].equalsIgnoreCase("createworld")) {
             return handleCreateWorld(sender, label, args);
         }
 
-        // -------------------------
-        // /simplevoid portal ...
-        // -------------------------
         if (args[0].equalsIgnoreCase("portal")) {
             return handlePortal(sender, label, args);
         }
@@ -45,7 +41,7 @@ public class SimpleVoidCommand implements CommandExecutor {
     }
 
     // ============================================================
-    // CREATE WORLD
+    // CREATE WORLD (FIXED FOR PAPER 1.20+)
     // ============================================================
     private boolean handleCreateWorld(CommandSender sender, String label, String[] args) {
 
@@ -61,20 +57,35 @@ public class SimpleVoidCommand implements CommandExecutor {
 
         String worldName = args[1];
 
-        if (Bukkit.getWorld(worldName) != null) {
-            player.sendMessage(ChatColor.RED + "World already exists.");
+        // --- SAFETY CHECK: Prevent dimension creation ---
+        File worldFolder = new File(Bukkit.getWorldContainer(), worldName);
+        File dimensionFolder = new File(Bukkit.getWorldContainer(),
+                "world/dimensions/minecraft/" + worldName);
+
+        if (dimensionFolder.exists()) {
+            player.sendMessage(ChatColor.RED + "A DIMENSION named '" + worldName + "' already exists.");
+            player.sendMessage(ChatColor.RED + "Delete this folder first:");
+            player.sendMessage(ChatColor.GRAY + dimensionFolder.getPath());
+            return true;
+        }
+
+        if (worldFolder.exists()) {
+            player.sendMessage(ChatColor.RED + "A WORLD folder named '" + worldName + "' already exists.");
+            player.sendMessage(ChatColor.RED + "Delete it first if you want a fresh void world:");
+            player.sendMessage(ChatColor.GRAY + worldFolder.getPath());
             return true;
         }
 
         player.sendMessage(ChatColor.YELLOW + "Creating void world '" + worldName + "'...");
 
+        // --- CORRECT WORLD CREATION FOR PAPER 1.20+ ---
         WorldCreator wc = new WorldCreator(worldName);
         wc.environment(World.Environment.NORMAL);
         wc.type(WorldType.NORMAL);
         wc.generateStructures(false);
         wc.generator(new VoidChunkGenerator());
 
-        World world = wc.createWorld();
+        World world = Bukkit.createWorld(wc);
 
         if (world == null) {
             player.sendMessage(ChatColor.RED + "Failed to create world.");
@@ -114,9 +125,6 @@ public class SimpleVoidCommand implements CommandExecutor {
 
         String sub = args[1];
 
-        // -------------------------
-        // CREATE PORTAL
-        // -------------------------
         if (sub.equalsIgnoreCase("create")) {
 
             if (args.length < 3) {
@@ -149,9 +157,6 @@ public class SimpleVoidCommand implements CommandExecutor {
             return true;
         }
 
-        // -------------------------
-        // DELETE PORTAL
-        // -------------------------
         if (sub.equalsIgnoreCase("delete")) {
 
             if (args.length != 3) {
@@ -163,9 +168,6 @@ public class SimpleVoidCommand implements CommandExecutor {
             return true;
         }
 
-        // -------------------------
-        // LIST PORTALS
-        // -------------------------
         if (sub.equalsIgnoreCase("list")) {
             plugin.getPortalManager().listPortals(player);
             return true;
