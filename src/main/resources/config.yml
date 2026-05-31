@@ -1,5 +1,6 @@
 # World players should spawn in on FIRST JOIN
-hub-world: "hub"
+#uncomment when you want the hub-world to be the first join world
+#hub-world: "hub"
 
 # Respawn behavior:
 #   "same-world" -> vanilla behavior
