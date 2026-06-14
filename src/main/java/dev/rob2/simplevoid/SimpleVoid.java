@@ -1,5 +1,6 @@
 package dev.rob2.simplevoid;
 
+import dev.rob2.simplevoid.commands.HubCommand;
 import dev.rob2.simplevoid.commands.SimpleVoidCommand;
 import dev.rob2.simplevoid.listeners.JoinListener;
 import dev.rob2.simplevoid.listeners.PortalListener;
@@ -16,7 +17,7 @@ public class SimpleVoid extends JavaPlugin {
     public void onEnable() {
         instance = this;
 
-        // Load config.yml (hub-world, respawn-mode, portals)
+        // Load config.yml (hub-world, portals)
         saveDefaultConfig();
 
         // ============================================================
@@ -26,10 +27,14 @@ public class SimpleVoid extends JavaPlugin {
         this.portalManager.loadPortals();
 
         // ============================================================
-        // REGISTER COMMANDS & LISTENERS
+        // REGISTER COMMANDS
         // ============================================================
         getCommand("simplevoid").setExecutor(new SimpleVoidCommand(this));
+        getCommand("hub").setExecutor(new HubCommand());   // <-- NEW
 
+        // ============================================================
+        // REGISTER LISTENERS
+        // ============================================================
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
         getServer().getPluginManager().registerEvents(new RespawnListener(), this);
         getServer().getPluginManager().registerEvents(new PortalListener(this.portalManager), this);

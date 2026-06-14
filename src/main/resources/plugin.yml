@@ -6,3 +6,6 @@ commands:
   simplevoid:
     description: SimpleVoid main command
     usage: /simplevoid
+  hub:
+    description: Teleport to the hub world
+    usage: /hub

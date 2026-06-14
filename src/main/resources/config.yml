@@ -5,7 +5,7 @@
 # Respawn behavior:
 #   "same-world" -> vanilla behavior
 #   "hub"        -> always respawn in hub-world
-respawn-mode: "same-world"
+respawn-mode: "hub"
 
 # Simple block-based portals
 portals: {}

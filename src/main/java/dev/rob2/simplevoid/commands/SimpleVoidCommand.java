@@ -1,5 +1,6 @@
 package dev.rob2.simplevoid.commands;
 
+import dev.rob2.simplevoid.ConfigManager;
 import dev.rob2.simplevoid.SimpleVoid;
 import org.bukkit.*;
 import org.bukkit.command.*;
@@ -24,16 +25,74 @@ public class SimpleVoidCommand implements CommandExecutor {
         if (args.length == 0) {
             sender.sendMessage(ChatColor.YELLOW + "SimpleVoid commands:");
             sender.sendMessage(ChatColor.GRAY + "/" + label + " createworld <name>");
-            sender.sendMessage(ChatColor.GRAY + "/" + label + " portal create <name> [height] [width]");
-            sender.sendMessage(ChatColor.GRAY + "/" + label + " portal delete <name>");
-            sender.sendMessage(ChatColor.GRAY + "/" + label + " portal list");
+            sender.sendMessage(ChatColor.GRAY + "/" + label + " portal <create|delete|list>");
+            sender.sendMessage(ChatColor.GRAY + "/" + label + " hub");
+            sender.sendMessage(ChatColor.GRAY + "/" + label + " sethub");
+            sender.sendMessage(ChatColor.GRAY + "/" + label + " reload");
             return true;
         }
 
+        // ============================================================
+        // HUB COMMAND
+        // ============================================================
+        if (args[0].equalsIgnoreCase("hub")) {
+
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage("Players only.");
+                return true;
+            }
+
+            String hubName = ConfigManager.getHubWorld();
+            World hub = Bukkit.getWorld(hubName);
+
+            if (hub == null) {
+                player.sendMessage(ChatColor.RED + "Hub world '" + hubName + "' does not exist!");
+                return true;
+            }
+
+            player.teleport(hub.getSpawnLocation());
+            player.sendMessage(ChatColor.GREEN + "Teleported to hub world: " + hubName);
+            return true;
+        }
+
+        // ============================================================
+        // SETHUB COMMAND
+        // ============================================================
+        if (args[0].equalsIgnoreCase("sethub")) {
+
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage("Players only.");
+                return true;
+            }
+
+            String worldName = player.getWorld().getName();
+
+            plugin.getConfig().set("hub-world", worldName);
+            plugin.saveConfig();
+
+            player.sendMessage(ChatColor.GREEN + "Hub world set to: " + worldName);
+            return true;
+        }
+
+        // ============================================================
+        // RELOAD COMMAND
+        // ============================================================
+        if (args[0].equalsIgnoreCase("reload")) {
+            plugin.reloadConfig();
+            sender.sendMessage(ChatColor.GREEN + "SimpleVoid config reloaded.");
+            return true;
+        }
+
+        // ============================================================
+        // CREATE WORLD
+        // ============================================================
         if (args[0].equalsIgnoreCase("createworld")) {
             return handleCreateWorld(sender, label, args);
         }
 
+        // ============================================================
+        // PORTAL COMMANDS
+        // ============================================================
         if (args[0].equalsIgnoreCase("portal")) {
             return handlePortal(sender, label, args);
         }
@@ -66,14 +125,12 @@ public class SimpleVoidCommand implements CommandExecutor {
 
         if (dimensionFolder.exists()) {
             player.sendMessage(ChatColor.RED + "A DIMENSION named '" + worldName + "' already exists.");
-            player.sendMessage(ChatColor.RED + "Delete this folder first:");
             player.sendMessage(ChatColor.GRAY + dimensionFolder.getPath());
             return true;
         }
 
         if (worldFolder.exists()) {
             player.sendMessage(ChatColor.RED + "A WORLD folder named '" + worldName + "' already exists.");
-            player.sendMessage(ChatColor.RED + "Delete it first if you want a fresh void world:");
             player.sendMessage(ChatColor.GRAY + worldFolder.getPath());
             return true;
         }
@@ -84,17 +141,12 @@ public class SimpleVoidCommand implements CommandExecutor {
             writeDimensionTypeJson(worldName);
             writeDimensionJson(worldName);
 
-            player.sendMessage(ChatColor.GREEN + "Datapack structure created for '" + worldName + "'.");
-            player.sendMessage(ChatColor.GREEN + "dimension_type JSON created.");
-            player.sendMessage(ChatColor.GREEN + "dimension JSON created.");
-
+            player.sendMessage(ChatColor.GREEN + "Datapack created for '" + worldName + "'.");
+            player.sendMessage(ChatColor.YELLOW + "Restart server or run /reload to activate.");
         } catch (IOException e) {
             player.sendMessage(ChatColor.RED + "Failed to create datapack files. Check console.");
             e.printStackTrace();
-            return true;
         }
-
-        player.sendMessage(ChatColor.YELLOW + "Restart the server or run /reload to activate the new dimension.");
 
         return true;
     }
@@ -104,18 +156,14 @@ public class SimpleVoidCommand implements CommandExecutor {
     // ============================================================
     private void createDatapackStructure(String worldName) throws IOException {
 
-        // Path to the server's main world folder
         Path worldFolder = Bukkit.getWorldContainer().toPath().resolve("world");
 
-        // Datapack root folder: world/datapacks/simplevoid_<worldName>/
         Path datapackRoot = worldFolder
                 .resolve("datapacks")
                 .resolve("simplevoid_" + worldName);
 
-        // Create datapack root
         Files.createDirectories(datapackRoot);
 
-        // Write pack.mcmeta
         Path packMeta = datapackRoot.resolve("pack.mcmeta");
         String packMetaContent = """
         {
@@ -127,33 +175,19 @@ public class SimpleVoidCommand implements CommandExecutor {
         """;
         Files.writeString(packMeta, packMetaContent);
 
-        // Create data/<worldName>/dimension_type/
-        Path dimensionTypeFolder = datapackRoot
-                .resolve("data")
-                .resolve(worldName)
-                .resolve("dimension_type");
-        Files.createDirectories(dimensionTypeFolder);
-
-        // Create data/<worldName>/dimension/
-        Path dimensionFolder = datapackRoot
-                .resolve("data")
-                .resolve(worldName)
-                .resolve("dimension");
-        Files.createDirectories(dimensionFolder);
+        Files.createDirectories(datapackRoot.resolve("data").resolve(worldName).resolve("dimension_type"));
+        Files.createDirectories(datapackRoot.resolve("data").resolve(worldName).resolve("dimension"));
     }
 
     // ============================================================
     // STEP 2A — WRITE dimension_type JSON
     // ============================================================
     private void writeDimensionTypeJson(String worldName) throws IOException {
-        Path worldFolder = Bukkit.getWorldContainer().toPath().resolve("world");
-        Path datapackRoot = worldFolder
-                .resolve("datapacks")
-                .resolve("simplevoid_" + worldName);
+        Path datapackRoot = Bukkit.getWorldContainer().toPath()
+                .resolve("world/datapacks/simplevoid_" + worldName);
 
         Path file = datapackRoot
-                .resolve("data")
-                .resolve(worldName)
+                .resolve("data").resolve(worldName)
                 .resolve("dimension_type")
                 .resolve(worldName + ".json");
 
@@ -177,17 +211,14 @@ public class SimpleVoidCommand implements CommandExecutor {
     }
 
     // ============================================================
-    // STEP 2B — WRITE dimension JSON (void + safe spawn)
+    // STEP 2B — WRITE dimension JSON
     // ============================================================
     private void writeDimensionJson(String worldName) throws IOException {
-        Path worldFolder = Bukkit.getWorldContainer().toPath().resolve("world");
-        Path datapackRoot = worldFolder
-                .resolve("datapacks")
-                .resolve("simplevoid_" + worldName);
+        Path datapackRoot = Bukkit.getWorldContainer().toPath()
+                .resolve("world/datapacks/simplevoid_" + worldName);
 
         Path file = datapackRoot
-                .resolve("data")
-                .resolve(worldName)
+                .resolve("data").resolve(worldName)
                 .resolve("dimension")
                 .resolve(worldName + ".json");
 
