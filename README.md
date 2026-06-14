@@ -71,7 +71,7 @@ Sets the hub world to the player’s current world and updates `config.yml`.
 hub-world: "hub"
 
 portals: {}
-
+```
 Respawn behavior
 • If the player has a valid bed, they respawn at their bed
 • If not, they respawn in the hub world
