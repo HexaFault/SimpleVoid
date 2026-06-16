@@ -17,6 +17,7 @@ public class SimpleVoid extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        ConfigManager.init(this);
 
         // Load config.yml (hub-world, portals)
         saveDefaultConfig();

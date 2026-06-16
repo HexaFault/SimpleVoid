@@ -32,9 +32,7 @@ public class SimpleVoidCommand implements CommandExecutor {
             return true;
         }
 
-        // ============================================================
         // HUB COMMAND
-        // ============================================================
         if (args[0].equalsIgnoreCase("hub")) {
 
             if (!(sender instanceof Player player)) {
@@ -55,9 +53,7 @@ public class SimpleVoidCommand implements CommandExecutor {
             return true;
         }
 
-        // ============================================================
         // SETHUB COMMAND
-        // ============================================================
         if (args[0].equalsIgnoreCase("sethub")) {
 
             if (!(sender instanceof Player player)) {
@@ -74,25 +70,19 @@ public class SimpleVoidCommand implements CommandExecutor {
             return true;
         }
 
-        // ============================================================
         // RELOAD COMMAND
-        // ============================================================
         if (args[0].equalsIgnoreCase("reload")) {
             plugin.reloadConfig();
             sender.sendMessage(ChatColor.GREEN + "SimpleVoid config reloaded.");
             return true;
         }
 
-        // ============================================================
         // CREATE WORLD
-        // ============================================================
         if (args[0].equalsIgnoreCase("createworld")) {
             return handleCreateWorld(sender, label, args);
         }
 
-        // ============================================================
         // PORTAL COMMANDS
-        // ============================================================
         if (args[0].equalsIgnoreCase("portal")) {
             return handlePortal(sender, label, args);
         }
@@ -102,7 +92,7 @@ public class SimpleVoidCommand implements CommandExecutor {
     }
 
     // ============================================================
-    // CREATE WORLD (DATAPACK-BASED VOID DIMENSION)
+    // CREATE WORLD (Minecraft 1.26 datapack-based dimension)
     // ============================================================
     private boolean handleCreateWorld(CommandSender sender, String label, String[] args) {
 
@@ -116,35 +106,31 @@ public class SimpleVoidCommand implements CommandExecutor {
             return true;
         }
 
-        String worldName = args[1];
+        String worldName = args[1].toLowerCase();
 
-        // --- SAFETY CHECK: Prevent dimension creation conflicts ---
-        File worldFolder = new File(Bukkit.getWorldContainer(), worldName);
-        File dimensionFolder = new File(Bukkit.getWorldContainer(),
-                "world/dimensions/minecraft/" + worldName);
+        // SAFETY CHECKS
+        File vanillaDim = new File(Bukkit.getWorldContainer(), "world/DIMENSIONS/" + worldName);
+        File datapackFolder = new File(Bukkit.getWorldContainer(), "world/datapacks/simplevoid_" + worldName);
 
-        if (dimensionFolder.exists()) {
-            player.sendMessage(ChatColor.RED + "A DIMENSION named '" + worldName + "' already exists.");
-            player.sendMessage(ChatColor.GRAY + dimensionFolder.getPath());
+        if (vanillaDim.exists()) {
+            player.sendMessage(ChatColor.RED + "A dimension named '" + worldName + "' already exists in DIMENSIONS/.");
             return true;
         }
 
-        if (worldFolder.exists()) {
-            player.sendMessage(ChatColor.RED + "A WORLD folder named '" + worldName + "' already exists.");
-            player.sendMessage(ChatColor.GRAY + worldFolder.getPath());
+        if (datapackFolder.exists()) {
+            player.sendMessage(ChatColor.RED + "A datapack for '" + worldName + "' already exists.");
             return true;
         }
 
-        // --- STEP 1: Create datapack structure ---
         try {
             createDatapackStructure(worldName);
             writeDimensionTypeJson(worldName);
             writeDimensionJson(worldName);
 
-            player.sendMessage(ChatColor.GREEN + "Datapack created for '" + worldName + "'.");
-            player.sendMessage(ChatColor.YELLOW + "Restart server or run /reload to activate.");
+            player.sendMessage(ChatColor.GREEN + "Void dimension datapack created: " + worldName);
+            player.sendMessage(ChatColor.YELLOW + "Run /reload to activate the new dimension.");
         } catch (IOException e) {
-            player.sendMessage(ChatColor.RED + "Failed to create datapack files. Check console.");
+            player.sendMessage(ChatColor.RED + "Failed to create datapack. Check console.");
             e.printStackTrace();
         }
 
@@ -152,47 +138,48 @@ public class SimpleVoidCommand implements CommandExecutor {
     }
 
     // ============================================================
-    // STEP 1 — CREATE DATAPACK FOLDERS + pack.mcmeta
+    // STEP 1 — CREATE DATAPACK STRUCTURE
     // ============================================================
     private void createDatapackStructure(String worldName) throws IOException {
 
-        Path worldFolder = Bukkit.getWorldContainer().toPath().resolve("world");
-
-        Path datapackRoot = worldFolder
-                .resolve("datapacks")
-                .resolve("simplevoid_" + worldName);
+        Path datapackRoot = Bukkit.getWorldContainer().toPath()
+                .resolve("world/datapacks/simplevoid_" + worldName);
 
         Files.createDirectories(datapackRoot);
 
-        Path packMeta = datapackRoot.resolve("pack.mcmeta");
-        String packMetaContent = """
+        // pack.mcmeta
+        String packMeta = """
         {
           "pack": {
             "pack_format": 48,
-            "description": "SimpleVoid dimension datapack"
+            "description": "SimpleVoid custom dimension"
           }
         }
         """;
-        Files.writeString(packMeta, packMetaContent);
 
+        Files.writeString(datapackRoot.resolve("pack.mcmeta"), packMeta);
+
+        // namespace folders
         Files.createDirectories(datapackRoot.resolve("data").resolve(worldName).resolve("dimension_type"));
         Files.createDirectories(datapackRoot.resolve("data").resolve(worldName).resolve("dimension"));
     }
 
     // ============================================================
-    // STEP 2A — WRITE dimension_type JSON
+    // STEP 2A — WRITE dimension_type JSON (correct for 1.26)
     // ============================================================
     private void writeDimensionTypeJson(String worldName) throws IOException {
-        Path datapackRoot = Bukkit.getWorldContainer().toPath()
-                .resolve("world/datapacks/simplevoid_" + worldName);
 
-        Path file = datapackRoot
+        Path file = Bukkit.getWorldContainer().toPath()
+                .resolve("world/datapacks/simplevoid_" + worldName)
                 .resolve("data").resolve(worldName)
                 .resolve("dimension_type")
                 .resolve(worldName + ".json");
 
         String json = """
         {
+          "infiniburn": "minecraft:infiniburn_overworld",
+          "effects": "minecraft:overworld",
+          "ambient_light": 1.0,
           "ultrawarm": false,
           "natural": false,
           "piglin_safe": false,
@@ -202,8 +189,7 @@ public class SimpleVoidCommand implements CommandExecutor {
           "min_y": 0,
           "height": 384,
           "logical_height": 384,
-          "coordinate_scale": 1.0,
-          "ambient_light": 1.0
+          "coordinate_scale": 1.0
         }
         """;
 
@@ -211,13 +197,12 @@ public class SimpleVoidCommand implements CommandExecutor {
     }
 
     // ============================================================
-    // STEP 2B — WRITE dimension JSON
+    // STEP 2B — WRITE dimension JSON (true void dimension)
     // ============================================================
     private void writeDimensionJson(String worldName) throws IOException {
-        Path datapackRoot = Bukkit.getWorldContainer().toPath()
-                .resolve("world/datapacks/simplevoid_" + worldName);
 
-        Path file = datapackRoot
+        Path file = Bukkit.getWorldContainer().toPath()
+                .resolve("world/datapacks/simplevoid_" + worldName)
                 .resolve("data").resolve(worldName)
                 .resolve("dimension")
                 .resolve(worldName + ".json");
@@ -226,12 +211,8 @@ public class SimpleVoidCommand implements CommandExecutor {
         {
           "type": "%s:%s",
           "generator": {
-            "type": "minecraft:flat",
-            "settings": {
-              "layers": [],
-              "biome": "minecraft:the_void",
-              "structure_overrides": []
-            }
+            "type": "minecraft:noise",
+            "settings": "minecraft:the_void"
           },
           "spawn": {
             "x": 0,
