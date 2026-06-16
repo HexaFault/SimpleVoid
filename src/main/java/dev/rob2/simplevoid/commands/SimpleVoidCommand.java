@@ -186,10 +186,15 @@ public class SimpleVoidCommand implements CommandExecutor {
           "respawn_anchor_works": false,
           "bed_works": true,
           "has_raids": false,
+          "has_skylight": false,
+          "has_ceiling": false,
+          "has_ender_dragon_fight": false,
           "min_y": 0,
           "height": 384,
           "logical_height": 384,
-          "coordinate_scale": 1.0
+          "coordinate_scale": 1.0,
+          "monster_spawn_light_level": 0,
+          "monster_spawn_block_light_limit": 0
         }
         """;
 
@@ -211,8 +216,12 @@ public class SimpleVoidCommand implements CommandExecutor {
         {
           "type": "%s:%s",
           "generator": {
-            "type": "minecraft:noise",
-            "settings": "minecraft:the_void"
+            "type": "minecraft:flat",
+            "settings": {
+              "layers": [],
+              "biome": "minecraft:the_void",
+              "structure_overrides": []
+            }
           },
           "spawn": {
             "x": 0,
