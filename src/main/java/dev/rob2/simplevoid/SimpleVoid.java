@@ -6,6 +6,7 @@ import dev.rob2.simplevoid.listeners.JoinListener;
 import dev.rob2.simplevoid.listeners.PortalListener;
 import dev.rob2.simplevoid.listeners.RespawnListener;
 import dev.rob2.simplevoid.portal.PortalManager;
+import dev.rob2.simplevoid.listeners.FirstJoinTracker;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SimpleVoid extends JavaPlugin {
@@ -38,6 +39,7 @@ public class SimpleVoid extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new JoinListener(), this);
         getServer().getPluginManager().registerEvents(new RespawnListener(), this);
         getServer().getPluginManager().registerEvents(new PortalListener(this.portalManager), this);
+        getServer().getPluginManager().registerEvents(new FirstJoinTracker(), this);
 
         getLogger().info("SimpleVoid enabled successfully.");
     }

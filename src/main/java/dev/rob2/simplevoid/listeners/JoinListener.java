@@ -12,13 +12,18 @@ public class JoinListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (!event.getPlayer().hasPlayedBefore()) {
-            String hubName = ConfigManager.getHubWorld();
-            World hub = Bukkit.getWorld(hubName);
-            if (hub != null) {
-                Location spawn = hub.getSpawnLocation();
-                event.getPlayer().teleport(spawn);
-            }
+
+        // Only teleport if this is a first join detected earlier
+        if (!FirstJoinTracker.isFirstJoin(event.getPlayer().getUniqueId())) {
+            return;
+        }
+
+        String hubName = ConfigManager.getHubWorld();
+        World hub = Bukkit.getWorld(hubName);
+
+        if (hub != null) {
+            Location spawn = hub.getSpawnLocation();
+            event.getPlayer().teleport(spawn);
         }
     }
 }
